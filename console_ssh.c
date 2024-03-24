@@ -5,12 +5,17 @@
  */
 #include <stdio.h>
 #include <string.h>
+
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
+
 #include "sdkconfig.h"
 #include "esp_console.h"
 #include "esp_log.h"
-#include "argtable3/argtable3.h"
 #include "console_ssh.h"
-
+#include "libssh2_helper.h"
 
 static const char *TAG = "console_ssh";
 
@@ -23,16 +28,6 @@ static const console_cmd_plugin_desc_t __attribute__((section(".console_cmd_desc
     .name = "console_cmd_ssh",
     .plugin_regd_fn = &console_cmd_ssh_register
 };
-
-typedef struct ssh_para_t{
-    char *host;
-    int  port;
-    char *user;
-    char *password;
-    int  hostLen;
-    int  userLen;
-    int  passwordLen;
-} ssh_para_t;
 
 typedef struct ssh_op_t {
     char *name;
@@ -86,7 +81,7 @@ static esp_err_t ssh_connect_op(ssh_op_t *self, int argc, char *argv[])
     // parse ssh connect parameters
     //// host
     ssh_para.hostLen = strlen(argv[self->start_index + SSH_CON_PARA_IDX_OFFSET_HOST]);
-    ssh_para.host = malloc(ssh_para.hostLen + 1);
+    // ssh_para.host = malloc(ssh_para.hostLen + 1);
     strlcpy((char *) ssh_para.host, argv[self->start_index + SSH_CON_PARA_IDX_OFFSET_HOST], ssh_para.hostLen + 1);
     //// port
     if (ssh_para_port_exist == 0) { 
@@ -96,11 +91,11 @@ static esp_err_t ssh_connect_op(ssh_op_t *self, int argc, char *argv[])
     }
     //// user
     ssh_para.userLen = strlen(argv[self->start_index + SSH_CON_PARA_IDX_OFFSET_USER]);
-    ssh_para.user = malloc(ssh_para.userLen + 1);
+    // ssh_para.user = malloc(ssh_para.userLen + 1);
     strlcpy((char *) ssh_para.user, argv[self->start_index + SSH_CON_PARA_IDX_OFFSET_USER], ssh_para.userLen + 1);
     //// password
     ssh_para.passwordLen = strlen(argv[self->start_index + SSH_CON_PARA_IDX_OFFSET_PASSWORD]);
-    ssh_para.password = malloc(ssh_para.passwordLen + 1);
+    // ssh_para.password = malloc(ssh_para.passwordLen + 1);
     strlcpy((char *) ssh_para.password, argv[self->start_index + SSH_CON_PARA_IDX_OFFSET_PASSWORD], ssh_para.passwordLen + 1);
 
     ESP_LOGI(TAG, "host = %s", ssh_para.host);
@@ -111,6 +106,19 @@ static esp_err_t ssh_connect_op(ssh_op_t *self, int argc, char *argv[])
     // ESP_LOGI(TAG, "usernameLen = %d", ssh_para.userLen);
     // ESP_LOGI(TAG, "passwordLen = %d", ssh_para.passwordLen);
 
+    // Execute ssh command
+    // 
+    
+    ssh_connect_task_para_t ssh_connect_task_para = {0};
+    ssh_connect_task_para.ssh_para = &ssh_para;
+    // ssh_connect_task_para.shell_command = "uname -a";
+    memcpy(ssh_connect_task_para.shell_command, "uname -a", 8);
+
+    ssh_connect_task_set_para(&ssh_connect_task_para);
+
+    xTaskCreate(&ssh_connect_task, "SSH", 1024*8, (void *)&ssh_connect_task_para , 2, NULL);
+
+    ESP_LOGI(TAG, "ssh_connect_op end.");
 
     return ESP_OK;
 }
@@ -159,7 +167,7 @@ esp_err_t console_cmd_ssh_register(void)
     esp_err_t ret;
 
     ESP_LOGI(TAG, "console_cmd_ssh_register");
-    
+
     const esp_console_cmd_t ping_cmd = {
         .command = "ssh",
         .help = "secure shell connect to target",
