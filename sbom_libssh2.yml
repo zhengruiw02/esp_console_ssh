@@ -1,0 +1,7 @@
+name: libssh2
+version: 1.11.1_DEV
+cpe: cpe:2.3:a:libssh2:libssh2:{}:*:*:*:*:*:*:*
+supplier: 'Organization: libssh2 <https://libssh2.org/>'
+description: libssh2 is a library implementing the SSH2 protocol.
+url: https://github.com/libssh2/libssh2
+hash: b27383918eefe9f49b982a7e553f1dce65639afd

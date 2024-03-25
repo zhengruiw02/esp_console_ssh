@@ -41,9 +41,9 @@ static esp_err_t ssh_help_op(ssh_op_t *self, int argc, char *argv[]);
 static esp_err_t ssh_connect_op(ssh_op_t *self, int argc, char *argv[]);
 
 static ssh_op_t cmd_list[] = {
-    {.name = "help", .operation = ssh_help_op, .arg_cnt = 2, .start_index = 1, .help = "ssh help: Prints the help text for all wifi commands"},
+    {.name = "help", .operation = ssh_help_op, .arg_cnt = 2, .start_index = 1, .help = "ssh help: Prints the help text for all wifi commands."},
     {.name = "connect",  .operation = ssh_connect_op,  .arg_cnt = 5, .start_index = 1, .help = "ssh connect <host> <user> <password>: SSH connect to given host."},
-    {.name = "connect",  .operation = ssh_connect_op,  .arg_cnt = 6, .start_index = 1, .help = "ssh connect <host> <port> <username> <password>: SSH connect to given host."},
+    {.name = "connect",  .operation = ssh_connect_op,  .arg_cnt = 6, .start_index = 1, .help = "ssh connect <host> <port> <username> <password>: SSH connect to given host with specify port."},
 
 };
 
